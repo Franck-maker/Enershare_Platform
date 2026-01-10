@@ -1,2 +1,4 @@
 .vscode
 .metals
+community/target
+metering/target
