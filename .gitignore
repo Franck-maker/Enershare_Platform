@@ -1,9 +1,9 @@
-.vscode
-.metals
-common/target
-community/target
-metering/target
-trading/target
-wallet/target
+# IDE
+.vscode/
+.metals/
 
-*.jar
+# Maven
+**/target/
+
+# Build artifacts
+**/*.jar
