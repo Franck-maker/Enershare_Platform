@@ -1,0 +1,50 @@
+package com.enershare.wallet.api;
+
+import com.enershare.wallet.domain.Wallet;
+import com.enershare.wallet.infrastructure.WalletRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/wallets")
+@RequiredArgsConstructor
+public class WalletController {
+
+    private final WalletRepository walletRepository;
+
+    // Requirement: POST /wallet/{id}/addFunds
+    @PostMapping("/{householdId}/fund")
+    public Wallet addFunds(@PathVariable UUID householdId, @RequestParam Double amount) {
+        Wallet wallet = walletRepository.findByHouseholdId(householdId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Wallet not found"));
+        
+        wallet.addFunds(amount);
+        return walletRepository.save(wallet);
+    }
+
+    // Requirement: POST /wallet/{id}/withdraw
+    @PostMapping("/{householdId}/withdraw")
+    public Wallet withdrawFunds(@PathVariable UUID householdId, @RequestParam Double amount) {
+        Wallet wallet = walletRepository.findByHouseholdId(householdId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Wallet not found"));
+        
+        // Basic rule validation
+        if (wallet.getBalance() < amount) {
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient funds");
+        }
+
+        wallet.withdrawFunds(amount);
+        return walletRepository.save(wallet);
+    }
+    
+    // Helper to see balance
+    @GetMapping("/{householdId}")
+    public Wallet getWallet(@PathVariable UUID householdId) {
+        return walletRepository.findByHouseholdId(householdId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Wallet not found"));
+    }
+}
