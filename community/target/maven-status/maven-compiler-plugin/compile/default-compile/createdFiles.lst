@@ -1,1 +1,12 @@
+com\enershare\community\api\CreateHouseholdRequest.class
+com\enershare\community\application\CreateHouseholdCommand$CreateHouseholdCommandBuilder.class
+com\enershare\community\domain\Household$HouseholdBuilder.class
+com\enershare\community\application\CreateHouseholdCommand.class
+com\enershare\community\api\HouseholdController.class
+com\enershare\community\application\HouseholdApplicationService.class
+com\enershare\community\domain\Household.class
+com\enershare\community\infrastructure\HouseholdRepository.class
+com\enershare\community\api\AgentController.class
 com\enershare\community\CommunityApplication.class
+com\enershare\community\application\NotificationListener.class
+com\enershare\community\domain\Household$HouseholdStatus.class

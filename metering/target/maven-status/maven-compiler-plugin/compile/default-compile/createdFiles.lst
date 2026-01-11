@@ -1,1 +1,8 @@
+com\enershare\metering\infrastructure\MeterReadingRepository.class
+com\enershare\metering\application\MeteringApplicationService.class
+com\enershare\metering\api\MeteringController.class
+com\enershare\metering\application\RecordReadingCommand$RecordReadingCommandBuilder.class
+com\enershare\metering\domain\MeterReading$MeterReadingBuilder.class
+com\enershare\metering\application\RecordReadingCommand.class
+com\enershare\metering\domain\MeterReading.class
 com\enershare\metering\MeteringApplication.class

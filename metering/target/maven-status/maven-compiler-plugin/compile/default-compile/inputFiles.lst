@@ -1,1 +1,6 @@
+C:\Users\fozie\enershare_platform\metering\src\main\java\com\enershare\metering\api\MeteringController.java
+C:\Users\fozie\enershare_platform\metering\src\main\java\com\enershare\metering\infrastructure\MeterReadingRepository.java
 C:\Users\fozie\enershare_platform\metering\src\main\java\com\enershare\metering\MeteringApplication.java
+C:\Users\fozie\enershare_platform\metering\src\main\java\com\enershare\metering\application\MeteringApplicationService.java
+C:\Users\fozie\enershare_platform\metering\src\main\java\com\enershare\metering\domain\MeterReading.java
+C:\Users\fozie\enershare_platform\metering\src\main\java\com\enershare\metering\application\RecordReadingCommand.java

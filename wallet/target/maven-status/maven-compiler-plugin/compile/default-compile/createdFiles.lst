@@ -1,1 +1,6 @@
+com\enershare\wallet\domain\Wallet.class
 com\enershare\wallet\WalletApplication.class
+com\enershare\wallet\infrastructure\WalletRepository.class
+com\enershare\wallet\application\WalletEventListener.class
+com\enershare\wallet\api\WalletController.class
+com\enershare\wallet\domain\Wallet$WalletBuilder.class

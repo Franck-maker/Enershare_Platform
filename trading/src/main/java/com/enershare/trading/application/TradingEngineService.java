@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.enershare.trading.infrastructure.BidRepository;
 import com.enershare.trading.infrastructure.OfferRepository;
+import com.enershare.metering.infrastructure.MeterReadingRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class TradingEngineService {
     private final OfferRepository offerRepository;
     private final BidRepository bidRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final MeterReadingRepository meterReadingRepository;
 
 
     /**
@@ -35,6 +37,18 @@ public class TradingEngineService {
 
             // Try to satisfy this Bid with available Offers
             for (var offer : offers) {
+                
+                // checking if the seller has producted enough energy by checking its readings
+                boolean hasEnergy = meterReadingRepository.findBySmartMeterId(offer.getSellerId().toString())
+                .stream()
+                .mapToDouble(reading -> reading.getKwh())
+                .sum() > offer.getKwhAmount();
+
+                if (!hasEnergy) {
+                    System.out.println("⚠️ Rule Violation: User " + offer.getSellerId() + " tried to sell without production.");
+                    continue;
+                }
+
                 if (offer.getKwhAmount() <= 0) continue; // Skip if empty
 
                 //CHECK PRICE: Does the buyer offer enough money?

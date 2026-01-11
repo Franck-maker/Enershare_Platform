@@ -40,6 +40,12 @@
             <artifactId>common</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!--metering-->
+        <dependency>
+            <groupId>com.enershare</groupId>
+            <artifactId>metering</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
