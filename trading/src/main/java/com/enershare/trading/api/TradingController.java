@@ -1,7 +1,11 @@
 package com.enershare.trading.api;
 
 import com.enershare.trading.application.TradingEngineService;
+import com.enershare.trading.domain.Bid;
+import com.enershare.trading.domain.Offer;
 import com.enershare.trading.domain.TradingSession;
+import com.enershare.trading.infrastructure.BidRepository;
+import com.enershare.trading.infrastructure.OfferRepository;
 import com.enershare.trading.infrastructure.TradingSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,15 +17,41 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/trading-sessions") 
+@RequestMapping("/api/trading")
 @RequiredArgsConstructor
 public class TradingController {
 
     private final TradingEngineService tradingService;
     private final TradingSessionRepository sessionRepository;
+    private final OfferRepository offerRepository; 
+    private final BidRepository bidRepository;    
 
-    //POST /tradingSessions (Create a new round)
-    @PostMapping
+    // --- Offer handler ---
+    @PostMapping("/offers")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Offer createOffer(@RequestBody Offer offer) {
+        //we should check if the user has produce energy but...
+        offer.setStatus(Offer.OfferStatus.OPEN);
+        // if CreatedAT is null, set it to now
+        if (offer.getCreatedAt() == null) {
+            offer.setCreatedAt(Instant.now());
+        }
+        return offerRepository.save(offer);
+    }
+
+    // --- Bid handler ---
+    @PostMapping("/bids")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Bid createBid(@RequestBody Bid bid) {
+        bid.setStatus(Bid.BidStatus.OPEN);
+        if (bid.getCreatedAt() == null) {
+            bid.setCreatedAt(Instant.now());
+        }
+        return bidRepository.save(bid);
+    }
+
+    // --- Session Handler ---
+    @PostMapping("/sessions")
     @ResponseStatus(HttpStatus.CREATED)
     public TradingSession createSession() {
         TradingSession session = TradingSession.builder()
@@ -31,16 +61,15 @@ public class TradingController {
         return sessionRepository.save(session);
     }
 
-    // GET /tradingSessions/active
-    @GetMapping("/active")
+    @GetMapping("/sessions/active")
     public List<TradingSession> getActiveSessions() {
         return sessionRepository.findAll().stream()
                 .filter(s -> s.getStatus() == TradingSession.SessionStatus.OPEN)
                 .toList();
     }
 
-    //POST /tradingSessions/{id}/close (Triggers the matching engine!)
-    @PostMapping("/{id}/close")
+    // launch a mtching according to a section
+    @PostMapping("/sessions/{id}/close")
     public String closeSessionAndRunMatching(@PathVariable UUID id) {
         TradingSession session = sessionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -49,7 +78,7 @@ public class TradingController {
         session.setEndTime(Instant.now());
         sessionRepository.save(session);
 
-        // Run the matching logic
+        // Launch engine
         tradingService.runMatchingEngine();
 
         return "Session " + id + " closed and matching engine executed.";
