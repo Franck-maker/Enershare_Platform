@@ -20,7 +20,10 @@ public class WalletController {
     @PostMapping("/{householdId}/fund")
     public Wallet addFunds(@PathVariable UUID householdId, @RequestParam Double amount) {
         Wallet wallet = walletRepository.findByHouseholdId(householdId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Wallet not found"));
+                .orElseGet(() -> Wallet.builder()
+                        .householdId(householdId)
+                        .balance(0.0)
+                        .build());
         
         wallet.addFunds(amount);
         return walletRepository.save(wallet);

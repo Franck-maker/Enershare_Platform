@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  # PostgreSQL for Community, Trading, Wallet
+  postgres:
+    image: postgres:15-alpine
+    container_name: enershare-postgres
+    ports:
+      - "5438:5432"
+    environment:
+      - POSTGRES_USER=francky
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=enershare_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  # MongoDB for Metering
+  mongo:
+    image: mongo:6.0
+    container_name: enershare-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  postgres-data:
+  mongo-data:
