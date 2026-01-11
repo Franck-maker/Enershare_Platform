@@ -44,10 +44,17 @@ public class WalletController {
         return walletRepository.save(wallet);
     }
     
-    // Helper to see balance
+    // GET /api/wallets/{id}
     @GetMapping("/{householdId}")
     public Wallet getWallet(@PathVariable UUID householdId) {
         return walletRepository.findByHouseholdId(householdId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Wallet not found"));
-    }
+                .orElseGet(() -> {
+                    // if the wallet doesn't exist, create it
+                    Wallet newWallet = Wallet.builder()
+                            .householdId(householdId)
+                            .balance(0.0)
+                            .build();
+                    return walletRepository.save(newWallet);
+                });
+            }
 }

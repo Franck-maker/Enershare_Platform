@@ -30,11 +30,17 @@ public class WalletEventListener {
 
         //Find the Buyer's Wallet
         Wallet buyerWallet = walletRepository.findByHouseholdId(event.getBuyerId())
-        .orElseThrow(() -> new RuntimeException("Buyer Wallet not found for ID: " + event.getBuyerId()) );
+       .orElseGet(() -> walletRepository.save(Wallet.builder()
+                        .householdId(event.getBuyerId())
+                        .balance(0.0)
+                        .build()));
 
         //Find the Seller's Wallet
         Wallet sellerWallet = walletRepository.findByHouseholdId(event.getSellerId())
-        .orElseThrow(() -> new RuntimeException("Seller Wallet not found for ID: " + event.getSellerId()));
+        .orElseGet(() -> walletRepository.save(Wallet.builder()
+                        .householdId(event.getSellerId())
+                        .balance(0.0)
+                        .build()));
 
         //Rule Check: Insufficient Funds
         if(buyerWallet.getBalance() < event.getTotalPrice()){
