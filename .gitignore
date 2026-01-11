@@ -1,4 +1,7 @@
 .vscode
 .metals
+common/target
 community/target
 metering/target
+trading/target
+wallet/target
