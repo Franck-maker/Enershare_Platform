@@ -12,6 +12,8 @@ services:
       - POSTGRES_DB=enershare_db
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    networks:
+      - enershare-net
 
   # MongoDB for Metering
   mongo:
@@ -21,7 +23,86 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - enershare-net
+
+  community:
+    build:
+      context: .
+      dockerfile: community/Dockerfile
+    container_name: enershare-community
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/enershare_db
+      - SPRING_DATASOURCE_USERNAME=francky
+      - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      - postgres
+    networks:
+      - enershare-net
+
+  metering:
+    build:
+      context: .
+      dockerfile: metering/Dockerfile
+    container_name: enershare-metering
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/enershare_metering
+    depends_on:
+      - mongo
+    networks:
+      - enershare-net
+
+  trading:
+    build:
+      context: .
+      dockerfile: trading/Dockerfile
+    container_name: enershare-trading
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/enershare_db
+      - SPRING_DATASOURCE_USERNAME=francky
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/enershare_metering
+    depends_on:
+      - postgres
+      - mongo
+    networks:
+      - enershare-net
+
+  wallet:
+    build:
+      context: .
+      dockerfile: wallet/Dockerfile
+    container_name: enershare-wallet
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/enershare_db
+      - SPRING_DATASOURCE_USERNAME=francky
+      - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      - postgres
+    networks:
+      - enershare-net
+
+  notifications:
+    build:
+      context: .
+      dockerfile: notifications/Dockerfile
+    container_name: enershare-notifications
+    ports:
+      - "8085:8085"
+    networks:
+      - enershare-net
 
 volumes:
   postgres-data:
   mongo-data:
+
+networks:
+  enershare-net:

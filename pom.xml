@@ -26,6 +26,7 @@
         <module>metering</module>
         <module>trading</module>
         <module>wallet</module>
+        <module>notifications</module>
     </modules>
 
     <dependencies>
