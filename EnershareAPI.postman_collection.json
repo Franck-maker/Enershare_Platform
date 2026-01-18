@@ -1,0 +1,398 @@
+{
+  "info": {
+    "_postman_id": "71e74486-b90f-471f-9237-6abc6532c244",
+    "name": "EnershareAPI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "31773305"
+  },
+  "item": [
+    {
+      "name": "1. Create Franck",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. we retrieve server response in JSON format\r",
+              "var reponse = pm.response.json();\r",
+              "\r",
+              "// Verifies if the result contains \"id\" field\"\r",
+              "console.log(\"ID reçu : \" + reponse.id);\r",
+              "\r",
+              "// we save the id in the variable collection franck_id\r",
+              "pm.collectionVariables.set(\"franck_id\", reponse.id);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"firstName\": \"Franck Abdiel\",\r\n    \"lastName\": \"KENNE FOZIE\",\r\n    \"address\": \"Paris\",\r\n    \"role\": \"PROSUMER\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/households",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "households"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Init Wallet franck",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8084/api/wallets/{{franck_id}}/fund?amount=0",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8084",
+          "path": [
+            "api",
+            "wallets",
+            "{{franck_id}}",
+            "fund"
+          ],
+          "query": [
+            {
+              "key": "amount",
+              "value": "0"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Create Ralph Consumer",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// 1. we retrieve server response in JSON format\r",
+              "var reponse = pm.response.json();\r",
+              "\r",
+              "// Verifies if the result contains \"id\" field\"\r",
+              "console.log(\"ID reçu : \" + reponse.id);\r",
+              "\r",
+              "// we save the id in the variable collection franck_id\r",
+              "pm.collectionVariables.set(\"ralph_id\", reponse.id);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"firstName\": \"ralph\",\r\n    \"lastName\": \"RIACHI\",\r\n    \"address\": \"Paris\",\r\n    \"role\": \"CONSUMER\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8081/api/households",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8081",
+          "path": [
+            "api",
+            "households"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Fund ralph",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8084/api/wallets/{{franck_id}}/fund?amount=100",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8084",
+          "path": [
+            "api",
+            "wallets",
+            "{{franck_id}}",
+            "fund"
+          ],
+          "query": [
+            {
+              "key": "amount",
+              "value": "100"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Open Session",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var reponse = pm.response.json();\r",
+              "console.log(\"ID reçu : \" + reponse.id);\r",
+              "pm.collectionVariables.set(\"session_id\", reponse.id);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8083/api/trading/sessions",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8083",
+          "path": [
+            "api",
+            "trading",
+            "sessions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. (Failure - Role testing purpose) Ralph tries to sell",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"sellerId\": \"{{ralph_id}}\",\r\n    \"kwhAmount\": 50,\r\n    \"pricePerKwh\": 0.20\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8083/api/trading/offers",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8083",
+          "path": [
+            "api",
+            "trading",
+            "offers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7. Franck Sells",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"sellerId\": \"{{franck_id}}\",\r\n    \"kwhAmount\": 20,\r\n    \"pricePerKwh\": 0.15\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8083/api/trading/offers",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8083",
+          "path": [
+            "api",
+            "trading",
+            "offers"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8. Ralph bids",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"buyerId\": \"{{ralph_id}}\",\r\n    \"kwhAmount\": 15,\r\n    \"pricePerKwh\": 0.15\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8083/api/trading/bids",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8083",
+          "path": [
+            "api",
+            "trading",
+            "bids"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "9. Close Trading session",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8083/api/trading/sessions/{{session_id}}/close",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8083",
+          "path": [
+            "api",
+            "trading",
+            "sessions",
+            "{{session_id}}",
+            "close"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10. Trade Info",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8083/api/trading/trades",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8083",
+          "path": [
+            "api",
+            "trading",
+            "trades"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "11. Checking Ralph's wallet",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Check active sessions",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "franck_id",
+      "value": ""
+    },
+    {
+      "key": "ralph_id",
+      "value": ""
+    },
+    {
+      "key": "session_id",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}

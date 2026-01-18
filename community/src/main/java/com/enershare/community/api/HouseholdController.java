@@ -25,4 +25,9 @@ public class HouseholdController {
     public Household createHousehold(@RequestBody CreateHouseholdCommand command){
         return householdApplicationService.register(command);
     }
+
+    @org.springframework.web.bind.annotation.GetMapping("/{id}")
+    public Household getHousehold(@org.springframework.web.bind.annotation.PathVariable java.util.UUID id) {
+        return householdApplicationService.getHousehold(id);
+    }
 }

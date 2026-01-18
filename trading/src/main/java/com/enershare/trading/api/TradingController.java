@@ -24,13 +24,23 @@ public class TradingController {
     private final TradingEngineService tradingService;
     private final TradingSessionRepository sessionRepository;
     private final OfferRepository offerRepository; 
-    private final BidRepository bidRepository;    
+    private final BidRepository bidRepository;
+    private final com.enershare.trading.infrastructure.TradeRepository tradeRepository;
+    private final com.enershare.trading.application.CommunityGateway communityGateway;
 
     // --- Offer handler ---
     @PostMapping("/offers")
     @ResponseStatus(HttpStatus.CREATED)
     public Offer createOffer(@RequestBody Offer offer) {
-        //we should check if the user has produce energy but...
+        validateActiveSession();
+        
+        // ROLE CHECK: Only PROSUMERs can sell
+        boolean isProsumer = communityGateway.isProsumer(offer.getSellerId());
+        if (!isProsumer) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only PROSUMERs can create Sales Offers.");
+        }
+        
+        
         offer.setStatus(Offer.OfferStatus.OPEN);
         // if CreatedAT is null, set it to now
         if (offer.getCreatedAt() == null) {
@@ -43,6 +53,7 @@ public class TradingController {
     @PostMapping("/bids")
     @ResponseStatus(HttpStatus.CREATED)
     public Bid createBid(@RequestBody Bid bid) {
+        validateActiveSession();
         bid.setStatus(Bid.BidStatus.OPEN);
         if (bid.getCreatedAt() == null) {
             bid.setCreatedAt(Instant.now());
@@ -51,28 +62,49 @@ public class TradingController {
     }
 
     // --- Session Handler ---
+    // POST /api/trading/sessions
     @PostMapping("/sessions")
     @ResponseStatus(HttpStatus.CREATED)
-    public TradingSession createSession() {
-        TradingSession session = TradingSession.builder()
-                .startTime(Instant.now())
-                .status(TradingSession.SessionStatus.OPEN)
-                .build();
+    public TradingSession createSession(@RequestBody(required = false) TradingSession session) {
+        // Validation: Ensure no other session is currently OPEN
+        boolean hasOpenSession = sessionRepository.findAll().stream()
+                .anyMatch(s -> s.getStatus() == TradingSession.SessionStatus.OPEN);
+        
+        if (hasOpenSession) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "An active trading session already exists.");
+        }
+
+        if (session == null) session = new TradingSession();
+        
+        session.setStatus(TradingSession.SessionStatus.OPEN);
+        if (session.getStartTime() == null) {
+            session.setStartTime(Instant.now());
+        }
         return sessionRepository.save(session);
     }
 
-    @GetMapping("/sessions/active")
+    @GetMapping("/active")
     public List<TradingSession> getActiveSessions() {
         return sessionRepository.findAll().stream()
                 .filter(s -> s.getStatus() == TradingSession.SessionStatus.OPEN)
                 .toList();
     }
+    
+    // --- History Handler ---
+    @GetMapping("/trades")
+    public List<com.enershare.trading.domain.Trade> getAllTrades() {
+        return tradeRepository.findAll();
+    }
 
-    // launch a mtching according to a section
+    // launch a matching according to a session
     @PostMapping("/sessions/{id}/close")
     public String closeSessionAndRunMatching(@PathVariable UUID id) {
         TradingSession session = sessionRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        if (session.getStatus() == TradingSession.SessionStatus.CLOSED) {
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session already closed.");
+        }
 
         session.setStatus(TradingSession.SessionStatus.CLOSED);
         session.setEndTime(Instant.now());
@@ -82,5 +114,13 @@ public class TradingController {
         tradingService.runMatchingEngine();
 
         return "Session " + id + " closed and matching engine executed.";
+    }
+
+    private void validateActiveSession() {
+        boolean hasOpenSession = sessionRepository.findAll().stream()
+                .anyMatch(s -> s.getStatus() == TradingSession.SessionStatus.OPEN);
+        if (!hasOpenSession) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Trading market is currently closed.");
+        }
     }
 }

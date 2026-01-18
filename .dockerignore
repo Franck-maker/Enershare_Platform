@@ -1,0 +1,21 @@
+# Ignore Git files
+.git
+.gitignore
+
+# Ignore IDE/Editor files
+.vscode
+.idea
+.metals
+.bloop
+*.iml
+
+# Ignore Maven build artifacts (we build inside Docker)
+target/
+**/target/
+*.class
+*.log
+*.jar
+
+# Ignore Docker files themselves
+docker-compose.yml
+Dockerfile

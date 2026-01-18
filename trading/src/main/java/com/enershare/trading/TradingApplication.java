@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 /**
  * <h2>Trading Context (Bounded Context)</h2>
@@ -19,14 +18,12 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
  * </ul>
  */
 @SpringBootApplication
-// Scanning all comlponents (Services, Controllers) in Trading and Metering
-@ComponentScan(basePackages = {"com.enershare.trading", "com.enershare.metering"})
+// Scanning all comlponents (Services, Controllers) in Trading
+@ComponentScan(basePackages = "com.enershare.trading")
 // we specify where are JPA repository (Postgres) -> Trading
 @EnableJpaRepositories(basePackages = "com.enershare.trading.infrastructure")
 // we specify where are JPA entities(Postgres) -> Trading
 @EntityScan(basePackages = "com.enershare.trading.domain")
-// we specify where are the repositories MongoDB -> Metering !
-@EnableMongoRepositories(basePackages = "com.enershare.metering.infrastructure")
 
 public class TradingApplication {
     public static void main(String [] args){

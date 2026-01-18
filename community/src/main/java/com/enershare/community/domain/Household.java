@@ -26,9 +26,17 @@ public class Household {
     @Enumerated(EnumType.STRING)
     @Column(nullable= false)
     private HouseholdStatus status;
-    
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable= false)
+    private HouseholdRole role;
+
     public enum HouseholdStatus {
         ACTIVE, INACTIVE, PENDING_VALIDATION
+    }
+
+    public enum HouseholdRole {
+        CONSUMER, PROSUMER
     }   
     
 }

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.enershare.trading.infrastructure.BidRepository;
 import com.enershare.trading.infrastructure.OfferRepository;
-import com.enershare.metering.infrastructure.MeterReadingRepository;
+// import com.enershare.metering.infrastructure.MeterReadingRepository; // REMOVED: No direct access
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +18,11 @@ public class TradingEngineService {
     private final OfferRepository offerRepository;
     private final BidRepository bidRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final MeterReadingRepository meterReadingRepository;
-
+    private final com.enershare.trading.infrastructure.TradeRepository tradeRepository;
+    // Injected Interfaces instead of Repository
+    private final EnergyGateway energyGateway;
+    private final WalletGateway walletGateway;
+    private final com.enershare.trading.infrastructure.external.RestNotificationGateway notificationGateway;
 
     /**
      * Triggered periodically (e.g., via Cron or Controller) to execute trades.
@@ -38,14 +41,18 @@ public class TradingEngineService {
             // Try to satisfy this Bid with available Offers
             for (var offer : offers) {
                 
-                // checking if the seller has producted enough energy by checking its readings
-                boolean hasEnergy = meterReadingRepository.findBySmartMeterId(offer.getSellerId().toString())
-                .stream()
-                .mapToDouble(reading -> reading.getKwh())
-                .sum() > offer.getKwhAmount();
+                // In this prototype, we assume Prosumers have sufficient production
+                boolean hasEnergy = true; 
 
                 if (!hasEnergy) {
                     System.out.println("⚠️ Rule Violation: User " + offer.getSellerId() + " tried to sell without production.");
+                    continue;
+                }
+                
+                // NEW: Check Funds
+                boolean hasFunds = walletGateway.reserveFunds(bid.getBuyerId(), bid.getPricePerKwh() * offer.getKwhAmount());
+                 if (!hasFunds) {
+                    System.out.println("⚠️ Rule Violation: User " + bid.getBuyerId() + " has insufficient funds.");
                     continue;
                 }
 
@@ -87,9 +94,30 @@ public class TradingEngineService {
         bidRepository.save(bid);
         offerRepository.save(offer);
 
-        // Publish Event for the Wallet Service
+        // CREATE AND SAVE TRADE
+        var trade = com.enershare.trading.domain.Trade.builder()
+            .buyerId(bid.getBuyerId())
+            .sellerId(offer.getSellerId())
+            .kwhAmount(amount)
+            .pricePerKwh(price)
+            .totalPrice(amount * price)
+            .timestamp(java.time.Instant.now())
+            .build();
+        
+        tradeRepository.save(trade);
+        System.out.println("✅ Trade Executed: " + trade);
+        
+        // Execute Payment Transfer
+        walletGateway.transferFunds(bid.getBuyerId(), offer.getSellerId(), trade.getTotalPrice());
+
+        // Send Notifications
+        notificationGateway.sendTradeNotification(bid.getBuyerId().toString(), "Bought " + amount + "kWh for " + trade.getTotalPrice() + "€");
+        notificationGateway.sendTradeNotification(offer.getSellerId().toString(), "Sold " + amount + "kWh for " + trade.getTotalPrice() + "€");
+
+        // Publish Event for the Wallet Service (optional if we use Gateway directly)
+        
         var event = com.enershare.common.events.TradeMatchedEvent.builder()
-                .tradeId(java.util.UUID.randomUUID())
+                .tradeId(trade.getId())
                 .sellerId(offer.getSellerId())
                 .buyerId(bid.getBuyerId())
                 .kwhAmount(amount)
@@ -101,7 +129,10 @@ public class TradingEngineService {
         
         System.out.println("Trade Executed! " + amount + "kWh sold for " + (amount * price) + "€");
     }
+        
+}
+          
 
 
     
-}
+

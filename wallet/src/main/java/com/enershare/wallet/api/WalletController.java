@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ public class WalletController {
 
     private final WalletRepository walletRepository;
 
-    // Requirement: POST /wallet/{id}/addFunds
+    // POST /wallet/{id}/addFunds
     @PostMapping("/{householdId}/fund")
     public Wallet addFunds(@PathVariable UUID householdId, @RequestParam Double amount) {
         Wallet wallet = walletRepository.findByHouseholdId(householdId)
@@ -29,7 +30,41 @@ public class WalletController {
         return walletRepository.save(wallet);
     }
 
-    // Requirement: POST /wallet/{id}/withdraw
+    //Reserve funds (Locking logic simulation)
+    // POST /api/wallets/{id}/reserve?amount=X
+    @PostMapping("/{householdId}/reserve")
+    public boolean reserveFunds(@PathVariable UUID householdId, @RequestParam Double amount) {
+        return walletRepository.findByHouseholdId(householdId)
+                .map(wallet -> wallet.getBalance() >= amount) 
+                .orElse(false);
+    }
+
+    // Transfer funds
+    // POST /api/transactions
+    @PostMapping("/transfer")
+    @Transactional
+    public void transfer(@RequestBody TransferRequest request) {
+        Wallet buyerWallet = walletRepository.findByHouseholdId(request.from())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Buyer Wallet not found"));
+        
+        Wallet sellerWallet = walletRepository.findByHouseholdId(request.to())
+                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Seller Wallet not found"));
+
+        if (buyerWallet.getBalance() < request.amount()) {
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient funds");
+        }
+
+        buyerWallet.withdrawFunds(request.amount());
+        sellerWallet.addFunds(request.amount());
+
+        walletRepository.save(buyerWallet);
+        walletRepository.save(sellerWallet);
+    }
+
+    public record TransferRequest(UUID from, UUID to, Double amount) {}
+
+
+    // POST /wallet/{id}/withdraw
     @PostMapping("/{householdId}/withdraw")
     public Wallet withdrawFunds(@PathVariable UUID householdId, @RequestParam Double amount) {
         Wallet wallet = walletRepository.findByHouseholdId(householdId)

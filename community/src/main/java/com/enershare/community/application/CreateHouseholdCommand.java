@@ -8,6 +8,7 @@ public class CreateHouseholdCommand {
     private String firstName;
     private String lastName;
     private String address;
+    private String role;
 
 
 }
