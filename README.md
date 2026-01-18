@@ -61,6 +61,8 @@ A complete end-to-end scenario is provided in the file `EnerShareAPI.postman_col
     *   Fund their wallets.
     *   Attempt an authorized sale (Success) and an unauthorized sale (Forbidden).
     *   Execute a trade and verify the implementation.
+
+| Domain | Feature | Status |
 | :--- | :--- | :--- |
 | **Trading** | Create Trading Session | ✅ Implemented |
 | **Trading** | Place Bid / Place Offer | ✅ Implemented |
