@@ -24,4 +24,9 @@ public class MeteringController {
         meteringApplicationService.record(command);
     }
 
+    @org.springframework.web.bind.annotation.GetMapping("/{smartMeterId}")
+    public java.util.List<com.enershare.metering.domain.MeterReading> getReadings(@org.springframework.web.bind.annotation.PathVariable String smartMeterId) {
+        return meteringApplicationService.getReadings(smartMeterId);
+    }
+
 }

@@ -43,29 +43,26 @@ graph TD
 
 ---
 
-## 2. Internal Structure (Hexagonal / Clean Architecture)
+## 2. Internal Structure (Hybrid Strategy)
 
-Each microservice (especially `Trading`) follows a strict separation of concerns to keep the Business Logic independent of Infrastructure (HTTP, Database, External APIs).
+The platform applies **Tactical Domain-Driven Design** by selecting the right architecture for each service's complexity:
 
-### Example: The Trading Service Layering
+### A. Core Domain: Hexagonal Architecture (Trading Service)
+The `Trading` service contains the complex business rules (Matching Engine, Auction logic). We use **Hexagonal Architecture (Ports & Adapters)** here to strictly isolate the Domain from the Infrastructure.
 
+**Layering:**
 ```text
 src/main/java/com/enershare/trading/
-├── api/                  <-- [Adapter] Primary Adapter (Controllers)
-├── application/          <-- [Port] Input Ports (Use Cases / Services)
-│   └── TradingEngineService.java
-├── domain/               <-- [Core] Entities & Rules (Bid, Offer, Trade)
-│   └── Trade.java
-└── infrastructure/       <-- [Adapter] Secondary Adapters
-    ├── persistence/      <-- Database Implementation (JPA/Hibernate)
-    └── external/         <-- Gateways to other Microservices
-        ├── RestWalletGateway.java       (Implements WalletGateway)
-        ├── RestNotificationGateway.java (Implements NotificationGateway)
-        └── RestEnergyGateway.java       (Implements EnergyGateway)
+├── api/                  <-- [Primary Adapter] REST Controllers
+├── application/          <-- [Port] Input Ports (Use Cases like TradingEngineService)
+├── domain/               <-- [Core] Entities (Bid, Offer) & Business Rules
+└── infrastructure/       <-- [Secondary Adapter] Repositories & External Gateways
 ```
 
-**Key Principle implemented:**
-The `TradingEngineService` (Application) does **not** know about the HTTP Client or the `Wallet` microservice endpoint. It only knows an interface `WalletGateway`. The `infrastructure` layer provides the implementation (`RestWalletGateway`) that makes the actual HTTP call.
+**Why?** This allows us to test the matching algorithm without a database and swap external providers (like the Wallet API) without touching the domain code.
+
+### B. Supporting Subdomains: Layered Architecture (Community, Wallet, Metering)
+Services like `Community` or `Metering` are primarily CRUD-oriented (Create/Read data). We use a simpler **Standard Layered Architecture** (Controller -> Service -> Repository) to avoid over-engineering.
 
 ---
 

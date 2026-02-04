@@ -22,5 +22,9 @@ public class MeteringApplicationService {
 
         meterReadingRepository.save(meterReading); 
     }
+
+    public java.util.List<MeterReading> getReadings(String smartMeterId) {
+        return meterReadingRepository.findBySmartMeterId(smartMeterId);
+    }
   
 }

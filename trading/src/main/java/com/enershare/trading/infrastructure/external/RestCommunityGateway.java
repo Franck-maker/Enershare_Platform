@@ -27,8 +27,6 @@ public class RestCommunityGateway implements CommunityGateway {
             HouseholdDto dto = restTemplate.getForObject(url, HouseholdDto.class);
             
             // Allow if role is "PROSUMER". 
-            // Also lenient check: if role is null (legacy data), maybe block? Or allow?
-            // "every services should be shown and we also have to implement the roles" -> Let's be strict.
             if (dto != null && "PROSUMER".equalsIgnoreCase(dto.getRole())) {
                 return true;
             }
