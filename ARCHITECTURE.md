@@ -43,28 +43,32 @@ graph TD
 
 ---
 
-## 2. Internal Structure (Hybrid Strategy)
+## 2. Internal Structure (Hexagonal / Clean Architecture)
 
-The platform applies **Tactical Domain-Driven Design** by selecting the right architecture for each service's complexity:
+All microservices in the platform follow a consistent **Hexagonal Architecture** (Ports & Adapters) structure to ensure modularity and extensive separation of concerns. This ensures that even simpler services are ready for future complexity.
 
-### A. Core Domain: Hexagonal Architecture (Trading Service)
-The `Trading` service contains the complex business rules (Matching Engine, Auction logic). We use **Hexagonal Architecture (Ports & Adapters)** here to strictly isolate the Domain from the Infrastructure.
+### Standard Layering Across Services
 
-**Layering:**
+Every service (`Trading`, `Community`, `Wallet`, `Metering`) is organized into these four distinct layers:
+
 ```text
-src/main/java/com/enershare/trading/
+src/main/java/com/enershare/{service}/
 ├── api/                  <-- [Primary Adapter] REST Controllers
-├── application/          <-- [Port] Input Ports (Use Cases like TradingEngineService)
-├── domain/               <-- [Core] Entities (Bid, Offer) & Business Rules
+├── application/          <-- [Port] Input Ports (Use Cases / Application Services)
+├── domain/               <-- [Core] Entities & Business Rules
 └── infrastructure/       <-- [Secondary Adapter] Repositories & External Gateways
 ```
 
-**Why?** This allows us to test the matching algorithm without a database and swap external providers (like the Wallet API) without touching the domain code.
+### Why this consistency?
+1.  **Scalability**: Even "simple" services like `Community` can evolve complex rules (e.g., identity verification) without refactoring the structure.
+2.  **Cognitive Load**: Developers can switch between services easily as they all share the same architectural map.
+3.  **Isolation**: The Domain is always protected from dependencies, whether it's PostgreSQL in `Wallet` or MongoDB in `Metering`.
 
-### B. Supporting Subdomains: Layered Architecture (Community, Wallet, Metering)
-Services like `Community` or `Metering` are primarily CRUD-oriented (Create/Read data). We use a simpler **Standard Layered Architecture** (Controller -> Service -> Repository) to avoid over-engineering.
-
----
+### Deep Dive: The Trading Service
+While all services share the structure, `Trading` leverages it most heavily for the **Matching Engine**:
+*   The `TradingEngineService` (Application) implements the core logic.
+*   It defines interfaces for `WalletGateway` and `EnergyGateway`.
+*   The `Infrastructure` layer provides the Implementation (Rest Clients).
 
 ## 3. Key Workflows
 
